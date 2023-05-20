@@ -1,3 +1,4 @@
+import argparse
 import data_loader
 from surprise import Dataset, Reader, accuracy
 from surprise.prediction_algorithms.matrix_factorization import SVD
@@ -62,7 +63,7 @@ def hyperparameter_tuning():
 
     return svd_configs[best_index], best_svd, best_rmse
 
-def generate_recommendations(svd, user_id, n = 10):
+def generate_recommendations(svd, user_id, n = 10, threshold = 4):
     """
     Generates recommendations for a given user ID.
     Given a (trained) SVD model and a user ID, creates a list of product IDs sorted by predicted rating.
@@ -72,24 +73,31 @@ def generate_recommendations(svd, user_id, n = 10):
     product_df = data_loader.get_product_dataframe()
     product_ids = product_df["product_id"].unique()
 
-    predictions = []
-    for product_id in product_ids:
-        predictions.append((product_id, svd.predict(user_id, product_id).est))
+    recommendations = []
 
-    predictions.sort(key = lambda x: x[1], reverse = True)
-    recommendations = [prediction[0] for prediction in predictions[:n]]
+    for product_id in product_ids:
+        score = svd.predict(user_id, product_id).est
+        if score >= threshold:
+            recommendations.append(product_id)
+
+        if len(recommendations) == n:
+            break
 
     return recommendations
 
 
 
-def main():
+def run(tune = False):
     print("Training SVDs...")
 
     # Train SVD on dataset
-    best_config, best_svd, best_rmse = hyperparameter_tuning()
-    print("Best configuration: {}".format(best_config))
-    print("RMSE: {}".format(best_rmse))
+    if tune:
+        best_config, best_svd, best_rmse = hyperparameter_tuning()
+        print("Best configuration: {}".format(best_config))
+        print("RMSE: {}".format(best_rmse))
+    else:
+        best_svd, best_rmse = funk_matrix_factorization()
+        print("RMSE: {}".format(best_rmse))
 
     # Get user IDs
     user_df = data_loader.get_user_dataframe()
@@ -115,6 +123,16 @@ def main():
 
     print("Recommendations written to recommendations.csv")
 
+
+def main():
+    # Argument parser
+    parser = argparse.ArgumentParser(description = "Funk Matrix Factorization")
+    parser.add_argument("--tune", action = "store_true", help = "Perform hyperparameter tuning")
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    run(tune=args.tune)
 
 
 if __name__ == "__main__":

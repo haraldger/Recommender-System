@@ -21,6 +21,7 @@ def get_user_item_ratings(filenames = ["data/olist_order_reviews_dataset.csv", "
 
     return df
 
+
 ### Utility functions ###
 
 def get_rating_dataframe(filename = "data/olist_order_reviews_dataset.csv"):
@@ -60,6 +61,7 @@ def get_user_dataframe(filename = "data/olist_customers_dataset.csv"):
 
 
 
+
 ############ DEPRECATED ############
 # def get_user_item_matrix(filenames = ["data/olist_order_reviews_dataset.csv", "data/olist_orders_dataset.csv", "data/olist_order_items_dataset.csv"]):
 #     """
@@ -74,3 +76,4 @@ def get_user_dataframe(filename = "data/olist_customers_dataset.csv"):
 #     user_item_matrix = df.pivot_table(index = "customer_id", columns = "product_id", values = "review_score")
 #     return user_item_matrix
 ############ DEPRECATED ############
+
